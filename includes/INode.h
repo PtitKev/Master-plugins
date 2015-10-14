@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 
+using namespace std ;
 namespace ydle {
 typedef enum {
 	TYPE_ETAT =		1		// Node send data
@@ -51,7 +52,7 @@ class INode
 {
 public:
 	typedef struct {
-		int	type ;
+		string	type ;
 		float val ;
 	} sNodeData ;
 	typedef  std::list<sNodeData> tNodeDataList ;

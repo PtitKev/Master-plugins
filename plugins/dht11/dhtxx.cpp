@@ -19,13 +19,13 @@ int NodeDhtXX::GetData (Frame_t *frame, tNodeDataList & l)
 
 	printf ("\t\t\t : f16  temp=%#0x  h=%#0x  [%d  %d]\n", p->temperature, p->humidity, p->temperature, p->humidity) ;
 	sNodeData nodeData ;
-	nodeData.type = DATA_DEGREEC ;
+	nodeData.type = "temperature" ;
 	nodeData.val = Float16To32(p->temperature) ;
 	SetVal (frame->sender,  "temperature", nodeData.val) ;
 
 	printf ("NodeDhtXX[%s]::GetData : temp=%g\n", Name().c_str(), nodeData.val) ;
 	l.push_back (nodeData) ;
-	nodeData.type = DATA_HUMIDITY ;
+	nodeData.type = "humidity" ;
 //FETS		nodeData.val = Float16To32(p->humidity) ;
 	nodeData.val = (float)p->humidity ;
 	SetVal (frame->sender,  "humidity", nodeData.val) ;
