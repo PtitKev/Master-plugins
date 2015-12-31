@@ -5,15 +5,16 @@
  *  Created on: Jan 11, 2014
  *      Author: denia
  */
+
+#ifndef SETTINGSPARSER_H
+#define SETTINGSPARSER_H
+
 #include <map>
 #include <memory>
 #include <string>
 #include <libconfig.h++>
 
-#ifndef SettingsParser_H
-#define SettingsParser_H
-
-namespace ydle {
+namespace ydleMaster {
 
 class SettingsParser {
 public:
@@ -42,6 +43,6 @@ private:
 #define PARAM_STR(name) SettingsParser::Instance()->Str(name)
 #define PARAM_INT(name) SettingsParser::Instance()->Int(name)
 
-} /* namespace ydle */
+} ; // namespace ydleMaster
 
-#endif /* SettingsParser_H */
+#endif // SETTINGSPARSER_H

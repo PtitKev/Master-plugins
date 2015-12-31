@@ -1,3 +1,0 @@
-sudo apt-get install i2c-tools libi2c-dev
-sudo modprobe i2c-dev
-sudo modprobe i2c-bcm2708

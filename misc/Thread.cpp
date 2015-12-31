@@ -1,6 +1,6 @@
 #include "Thread.h"
 
-using namespace ydle ;
+using namespace ydleMaster ;
 using namespace std ;
 
 Thread::Thread (string nom) : Ident (nom)
@@ -45,11 +45,10 @@ void Thread::ThreadMain()
 // No action, sleep only
 void Thread::ThreadAction()
 {
-		Pause ();
+  Pause ();
 }
 
 void Thread::Pause()
 {
-		nanosleep(&valPause, NULL);
+  nanosleep (&valPause, NULL);
 }
-

@@ -11,4 +11,7 @@
 */old/*
 
 # binary 
-bin/
+bin/objs
+
+# dir
+nbproject/

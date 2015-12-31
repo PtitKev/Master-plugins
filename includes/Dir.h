@@ -1,16 +1,15 @@
-#ifndef _Dir_H_
-#define _Dir_H_
+#ifndef DIR_H
+#define DIR_H
 
 #include <list>
 #include <string>
 
-namespace ydle {
+namespace ydleMaster {
 
 typedef std::list<std::string> StringList ;
 
 void ListFiles (const char * dir, const char * pattern, StringList & files) ;
-void ListPlugins (const char * dir, StringList & files) ;
 
-}
+} ; // namespace ydleMaster
 
-#endif // _Dir_H_
+#endif // DIR_H

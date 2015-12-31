@@ -5,8 +5,8 @@
  *      Author: denia
  */
 
-#ifndef Float_H_
-#define Float_H_
+#ifndef FLOAT_H
+#define FLOAT_H
 
 #include <stdint.h>
 
@@ -15,4 +15,4 @@ typedef uint16_t float16 ;
 extern float16 Float32To16 (float) ;
 extern float Float16To32 (float16) ;
 
-#endif /* Float_H_ */
+#endif // FLOAT_H

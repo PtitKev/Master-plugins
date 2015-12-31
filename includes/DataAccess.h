@@ -1,10 +1,10 @@
+#ifndef DATAACCESS_H
+#define DATAACCESS_H
 
-#ifndef DataAccess_H
-#define DataAccess_H
 #include <map>
 #include <string>
 
-namespace ydle {
+namespace ydleMaster {
 
 class DataAccess : public std::map <std::string, double>
 {
@@ -13,7 +13,6 @@ public:
 	static DataAccess data ;
 };
 
-#define DATA DataAccess::data
+} ; // namespace ydleMaster
 
-} ;
-#endif // DataAccess_H
+#endif // DATAACCESS_H

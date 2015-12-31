@@ -1,9 +1,8 @@
-
-#ifndef Crc_H_
-#define Crc_H_
+#ifndef CRC_H
+#define CRC_H
 
 #include <stdint.h>
 
-extern uint8_t  crc8(uint8_t* buf, int len) ;
+extern uint8_t crc8(uint8_t* buf, int len) ;
 
-#endif // Crc_H_
+#endif // CRC_H

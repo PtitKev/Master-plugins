@@ -1,8 +1,7 @@
 #include "DataAccess.h"
 	
-using namespace ydle ;
+using namespace ydleMaster ;
 using namespace std ;
-
 
 DataAccess DataAccess::data ;
 

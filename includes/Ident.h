@@ -1,5 +1,5 @@
-#ifndef _Ident_H_
-#define _Ident_H_
+#ifndef IDENT_H
+#define IDENT_H
 
 #include <string>
 
@@ -13,4 +13,4 @@ private:
 	std::string		mName ;
 } ;
 
-#endif // _Ident_H_
+#endif // IDENT_H

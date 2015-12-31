@@ -1,11 +1,12 @@
-#ifndef _Thread_H_
-#define _Thread_H_
+#ifndef THREAD_H
+#define THREAD_H
 
 #include <thread>
-#include "Ident.h"
-#include "time.h"
+#include <time.h>
 
-namespace ydle {
+#include "Ident.h"
+
+namespace ydleMaster {
 
 class Thread : public Ident {
 public:
@@ -27,5 +28,6 @@ protected:
 	struct timespec valPause ;
 } ;
 
-} ; // namespace ydle
-#endif // _Thread_H_
+} ; // namespace ydleMaster
+
+#endif // THREAD_H

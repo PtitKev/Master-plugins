@@ -34,9 +34,8 @@
  *
  */
 
-
-#ifndef WEBSERVER_H_
-#define WEBSERVER_H_
+#ifndef WEBSERVER_H
+#define WEBSERVER_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -219,6 +218,7 @@ class HTTPServer{
                            HTTPResponse *response);
 
 };
-}  // http
 
-#endif /* WEBSERVER_H_ */
+};  // http
+
+#endif // WEBSERVER_H

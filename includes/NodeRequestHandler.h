@@ -5,31 +5,32 @@
  *      Author: denia
  */
 
+#ifndef NODEREQUESTHANDLER_H
+#define NODEREQUESTHANDLER_H
 
-#ifndef NODEREQUESTHANDLER_H_
-#define NODEREQUESTHANDLER_H_
-#include "INodesManager.h"
-#include "webServer.h"
 #include <jsoncpp/json/json.h>
+
+#include "NodesManager.h"
+
+#include "WebServer.h"
 
 namespace WebServer {
 
-class NodeRequestHandler  : public HTTPServer::BaseHTTPCallback {
-private:
-	ydle::INodesManager *_pNodes;
+class NodeRequestHandler  : public HTTPServer::BaseHTTPCallback
+{
+  private:
+    ydleMaster::NodesManager *_nodesManager;
 
-public:
-	NodeRequestHandler(ydle::INodesManager *p);
-	virtual ~NodeRequestHandler();
-    int Run(const HTTPRequest *request, HTTPResponse *response);
-protected:
-	void Manage3Param (const HTTPRequest *request, Json::Value &r, int cmd) ;
-	void Manage2Param (const HTTPRequest *request, Json::Value &r, int cmd) ;
-	int NodeGeneric2(int sender, int target, int cmd, int* result) ;
-	int NodeGeneric3(int sender, int target, int id, int cmd, int* result) ;
-	void	SetResponse (Json::Value &r, const char * result, const char * msg) ;
+  public:
+    NodeRequestHandler(ydleMaster::NodesManager *p);
+    virtual ~NodeRequestHandler();
+    int Run (const HTTPRequest *request, HTTPResponse *response);
+
+  protected:
+    Json::Value jsonReply;
+    void SetResponse (const char *result, const char *msg) ;
 };
 
-} /* namespace WebServer */
+} // namespace WebServer
 
-#endif /* NODEREQUESTHANDLER_H_ */
+#endif // NODEREQUESTHANDLER_H

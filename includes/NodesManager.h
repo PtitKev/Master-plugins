@@ -1,35 +1,43 @@
+#ifndef NODESMANAGER_H
+#define NODESMANAGER_H
 
-#ifndef NodeManager_H
-#define NodeManager_H
-
-#include "Kernel.h"
-#include "INodesManager.h"
-#include "IProtocol.h"
 #include <list>
 #include <string>
 
-namespace ydle {
+#include "Kernel.h"
+#include "IManager.h"
+#include "IProtocol.h"
 
-class NodesManager : public INodesManager
+namespace ydleMaster {
+
+class NodesManager : public IManager
 {
-public:
-	typedef std::list<int> tNodesList ;
-public:
-static const int NB_NODES = 256 ;
-	NodesManager () {}; 
-	void Init (Kernel * k) ;
-	virtual int	SendCmd (int target, int sender, int param, int cmd) ;
-	INode *	GetNode (Frame_t *) ;
-	INode *	GetNode (int) ;
-private:
-	void decoder (std::string & s, tNodesList & l) ;
-	bool decoder (std::string & s, std::string & nom, tNodesList & l) ;
-	typedef INode * tpNode ;
-	tpNode	_nodes[NB_NODES+1] ; // 2^8 maximum nodes
-	Kernel::ProtocolList	* pProtocols ;
+  public:
+    std::string Name () { return "nodes" ; }
+    void Init (Kernel * k) ;
+    int SendCmd (int target, int sender, int param, int cmd) ;
+
+    INode *	GetNode (IFrame *) ;
+    INode *	GetNode (int) ;
+
+  public:
+    NodesManager () {}; 
+    ~NodesManager () {}; 
+    void SubscribeREST (WebServer::HTTPServer *) ; 
+
+    typedef std::list<int> tNodesList ;
+    static const int NB_NODES = 256 ;
+
+    IProtocol *	GetProtocol (std::string name)
+    {
+      return _kernel.Protocol(name) ;
+    } ;
+
+  private:
+    Kernel _kernel ;
+    INode * _nodes[NB_NODES+1] ; // 2^8 maximum nodes
 } ;
 
-} ; // namespace ydle
+} ; // namespace ydleMaster
 
-#endif // NodeManager_H
-
+#endif // NODESMANAGER_H

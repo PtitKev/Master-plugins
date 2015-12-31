@@ -1,5 +1,5 @@
-#ifndef __DYN_LOAD_H__
-#define  __DYN_LOAD_H__
+#ifndef DYNLOAD_H
+#define DYNLOAD_H
 
 #include <string>
 #include <stdexcept>
@@ -33,11 +33,8 @@ public:
 	}
 
 protected:
-protected:
-    std::string		mDllName ;
+  std::string		mDllName ;
 	tDynLoadHandle 	mHandle ;
-    
 } ;
 
-
-#endif //  __DYN_LOAD_H__
+#endif // DYNLOAD_H

@@ -1,5 +1,5 @@
 /*
- * IhmRestHandler.cpp
+ * IhmCommunicationThread.cpp
  *
  *  Created on: Jan 6, 2014
  *      Author: denia
@@ -10,123 +10,102 @@
 #include <thread>
 #include <string.h>
 
-#include "logging.h"
 #include "INode.h"
+#include "IManager.h"
+
+#include "LogDestination.h"
 #include "IhmCommunicationThread.h"
-#include "RestBrowser.h"
+#include "NodesManager.h"
+#include "WebBrowser.h"
 
 using namespace std ;
-using namespace ydle ;
+using namespace ydleMaster ;
 
-
-IhmCommunicationThread::IhmCommunicationThread(string address, NodesManager * nodeMgr) :
-	web_address(address), _nodesManager(nodeMgr)
+IhmCommunicationThread::IhmCommunicationThread(Kernel *kernel) :
+	_kernel(kernel)
 {
 	listcmd_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 }
 
-IhmCommunicationThread::~IhmCommunicationThread() {
-
+IhmCommunicationThread::~IhmCommunicationThread()
+{
 }
-// ----------------------------------------------------------------------------
-/**
- Routine: AddToListCmd()
- Inputs: Frame_t cmd
 
+int IhmCommunicationThread::SendFrame(IFrame &frame)
+{
+  char sztmp[255];
+  sprintf(sztmp,"IHM: Data Hex: ");
+  for (int a=0;a<frame.taille-1;a++)
+    sprintf(sztmp,"%s 0x%02X", sztmp, frame.data[a]);
+  YDLE_DEBUG << sztmp;
 
- Outputs:
+	int sender = (int) frame.sender;
 
- Add a trame for IHM
- */
-// ----------------------------------------------------------------------------
-void IhmCommunicationThread::AddToListCmd(Frame_t * cmd) {
-	/* Enter the critical section */
+  IManager *nm = _kernel->Manager ("nodes");
 
-	Frame_t tmp;
-	memcpy(&tmp, cmd, sizeof(Frame_t));
+	INode *pNode = nm->GetNode (sender) ;
+	if (pNode == NULL) {
+		YDLE_DEBUG << "SendFrame : node " << sender << " UNKNOWN";
+		return 0 ;
+	}
+
+  std::stringstream ihm;
+	ihm << PARAM_STR("ihm_address") << ":" << PARAM_STR("ihm_port");
+
+	std::stringstream path;
+	path << PARAM_STR("ihm_base") << PARAM_STR("ihm_datas_post");
+
+  memset(sztmp, 0, sizeof(sztmp));
+  for (int a=0;a<frame.taille-1;a++)
+    sprintf(sztmp,"%s0x%02X", sztmp, frame.data[a]);
+
+  stringstream buf;
+  buf << "sender=" << sender << "&value=" << sztmp << "\r\n" ;
+
+  WebBrowser browser(ihm.str());
+  browser.doPost(path.str(), buf.str());
+
+	return 1;
+}
+
+void IhmCommunicationThread::AddFrameToList(IFrame *frame) {
+
+	YDLE_DEBUG << "Frame added";
+
+	IFrame tmp;
+
+	memcpy(&tmp, frame, sizeof(IFrame));
 
 	pthread_mutex_lock(&listcmd_mutex);
 	ListCmd.push_back(tmp);
-	/*Leave the critical section */
 	pthread_mutex_unlock(&listcmd_mutex);
 }
 
 void IhmCommunicationThread::ThreadBegin()
 {
-	SetPauseMs (1000) ;
 	YDLE_INFO << "Start Communication thread";
+	SetPauseMs (1000) ;
 }
 
 void IhmCommunicationThread::ThreadAction()
 {
-	pthread_mutex_lock(&this->listcmd_mutex);
-	int size = this->ListCmd.size();
-	pthread_mutex_unlock(&this->listcmd_mutex);
+	pthread_mutex_lock(&listcmd_mutex);
+	int size = ListCmd.size();
+	pthread_mutex_unlock(&listcmd_mutex);
 
 	if(size <= 0) {
 		Pause () ;
 		return ;
 	}
-	
 
 	for(int i = 0; i < size; i++){
-		pthread_mutex_lock(&this->listcmd_mutex);
-		Frame_t frame = this->ListCmd.front();
-		this->ListCmd.pop_front();
-		pthread_mutex_unlock(&this->listcmd_mutex);
 
-		if(this->putFrame(frame) == 0){
-			// Failed to send the data, so re-insert the frame in the waiting list
-			pthread_mutex_lock(&this->listcmd_mutex);
-			this->ListCmd.push_back(frame);
-			pthread_mutex_unlock(&this->listcmd_mutex);
-		}
+		pthread_mutex_lock(&listcmd_mutex);
+		IFrame frame = ListCmd.front();
+		ListCmd.pop_front();
+		pthread_mutex_unlock(&listcmd_mutex);
+
+		SendFrame(frame);
 	}
 	Pause () ;
-
 }
-
-int IhmCommunicationThread::putFrame(Frame_t & frame)
-{
-	string  post_data;
-	stringstream buf;
-
-		char sztmp[255];
-		sprintf(sztmp,"IHM:Data Hex: ");
-		for (int a=0;a<frame.taille-1;a++)
-			sprintf(sztmp,"%s 0x%02X",sztmp,frame.data[a]);
-		YDLE_DEBUG << sztmp;
-
-	int sender = (int)frame.sender;
-	int index = 0;
-
-	stringstream request;
-	request << "/nodes/datas.json";
-	INode::tNodeDataList dataList ;
-	INode * pNode = _nodesManager->GetNode (sender) ;
-	if (pNode == NULL) {
-		YDLE_DEBUG << "putFrame : node:" << sender << " UNKNOWN" << "\n";
-		return 0 ;
-	}
-	int ret = pNode->GetData (&frame, dataList) ;
-	printf ("%d IhmCommunicationThread::putFrame ret=%d  node<%s>\n", __LINE__, ret, pNode->Name().c_str()) ;
-	for( INode::tNodeDataList::iterator it = dataList.begin(); it != dataList.end(); ++it) {
-		INode::sNodeData & data = *it ;
-
-	printf ("%d  value f:%g   \n", __LINE__, data.val) ;
-		YDLE_DEBUG << "Data received : From "<< sender << " Type : "
-			<< data.type << " Value : " << data.val << "\n";
-
-		RestBrowser browser(this->web_address);
-		stringstream buf;
-		buf << "sender=" << sender << "&type=" << data.type << "&data=" << data.val << "\r\n" ;
-		browser.doPost(request.str(), buf.str());
-		index++;
-	}
-
-
-	return 1;
-}
-
-
-

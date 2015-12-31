@@ -1,7 +1,3 @@
-#ifndef Master_H
-#define Master_H
-
-
 //----------------------------------------------------------------------
 //  Project: Ydle
 //-------------------------------------------------------------------------
@@ -11,41 +7,63 @@
 //
 //  Copyright 2013
 //-------------------------------------------------------------------------
-#include "NodesManager.h"
-#include "restLoggerDestination.h"
-#include "SettingsParser.h"
-#include "IhmCommunicationThread.h"
-#include "NodeRequestHandler.h"
-#include "logging.h"
+
+#ifndef MASTER_H
+#define MASTER_H
+
 #include <memory>
 #include <string>
 
-namespace ydle {
+#include "IhmCommunicationThread.h"
+#include "LogDestination.h"
+#include "RestLogDestination.h"
+#include "SettingsParser.h"
+#include "WebServer.h"
+
+namespace ydleMaster {
 
 class Master
 {
-public:
-	Master (int argc, char **argv)  ;
-	void	StartComm() ;
-	void	Start() ;
-	NodesManager * NodesMgr () {return &_nodesManager ; }
-private:
-	void	InitLog () ;
-	void	InitRestLog();
-	void	InitPlugins () ;
-	void	InitProtocols () ;
-	void	InitFeatures () ;
-	void	StartFeatures () ;
+  public:
+    Master (int argc, char **argv)  ;
+    void	Start() ;
+    //~ NodesManager * NodesMgr () {return &_nodesManager ; }
+    //~ ScriptsManager * ScriptsMgr () {return &_scriptsManager ; }
 
-private:
-	StdErrorLogDestination *stderr_log ;
-	restLoggerDestination *restLog ;
-	SettingsParser *	_pSettings ;
-	std::unique_ptr<IhmCommunicationThread> _pCom;
-	Kernel				_kernel ;
-	NodesManager		_nodesManager ;
+  private:
+    void	InitConfig (int argc, char **argv)  ;
+    void	InitRestServer () ;
+
+    void	InitLog () ;
+    void	InitRestLog();
+
+    void	InitPlugins () ;
+
+    void	InitConnectors () ;
+    void	InitProtocols () ;
+    void	InitNodes () ;
+    void	InitFeatures () ;
+    void	InitManagers () ;
+
+    void	StartComm() ;
+    void	StartFeatures () ;
+
+  private:
+    StdErrorLogDestination *stderr_log ;
+    RestLogDestination *restLog ;
+
+    SettingsParser *	_pSettings ;
+
+    Kernel _kernel ;
+
+    std::unique_ptr<IhmCommunicationThread> _pCom;
+
+    WebServer::HTTPServer * _server;
+
+    //~ NodesManager _nodesManager ;
+    //~ ScriptsManager _scriptsManager ;
 } ;
 
-} ; // namespace ydle
+} ; // namespace ydleMaster
 
-#endif // Master_H
+#endif // MASTER_H

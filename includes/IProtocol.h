@@ -1,53 +1,73 @@
+/* 
+ * File:   IScriptsManager.h
+ * Author: Xylerk
+ *
+ * Created on 29 octobre 2015, 21:55
+ */
 
-#ifndef _IProtocol_H_
-#define _IProtocol_H_
+#ifndef IPROTOCOL_H
+#define IPROTOCOL_H
 
-#include "INode.h"
-#include "ydle-log.h"
-#include "SettingsParser.h"
 #include <boost/signals2.hpp>
 #include <boost/bind.hpp>
 #include <sys/time.h>
+#include <jsoncpp/json/json.h>
 
+#include "IConnector.h"
+#include "IFrame.h"
+#include "INode.h"
 
+#include "SettingsParser.h"
+#include "YdleLog.h"
+#include "ListPtr.h"
+#include "WebServer.h"
 
-namespace ydle {
+namespace ydleMaster {
+
+class IConnector;
+
 class IProtocol
 {
-public:
-	IProtocol () {} ;
-	virtual ~IProtocol () {} ;
-	virtual std::string Name ()  = 0 ;
-	virtual void Start ()  = 0 ;
-	virtual void debugMode(bool mode = true) {} ;
-	virtual void InitPlugin () = 0 ;
-	virtual void SendMsg (Frame_t & frame) = 0 ;
+  public:
+    virtual std::string Name () = 0 ;
+    virtual std::string Class () = 0 ;
+    virtual std::string Connector () = 0 ;
 
-	template <class T>
-	void	Subscribe (T* o, void (T::*func) (Frame_t*))
-	{
-		_signalNewFrame.connect(bind(func, o,  _1));
-	}
+    virtual void Init (IConnector * connector) = 0 ;
+    virtual void Start () = 0 ;
 
-	static int		GetTimeMs() {
-		struct timeval localTime;
-		gettimeofday(&localTime, NULL); 
-		int iTime=localTime.tv_sec * 1000000;
-		iTime+=localTime.tv_usec;
-		return (iTime/1000);
-	}
+    virtual void Receive (uint8_t) = 0 ;
+    virtual Json::Value onIHMRequest (const WebServer::HTTPRequest *) = 0 ;
+    //~ virtual void Send (IFrame *) = 0 ;
 
-protected:
-	void Notify (Frame_t *pFrame)
-	{
-		_signalNewFrame(pFrame);
-	}
-protected:
-	boost::signals2::signal<void (Frame_t*) > _signalNewFrame;
-	
-	
+    virtual std::string getDefaultNode () = 0 ;
+
+  public:
+    IProtocol () {} ;
+    virtual ~IProtocol () {} ;
+
+    typedef ListPtr<INode> NodeList ;
+    void RegisterNode (INode * p) { this->_nodes.push_back (p); }
+    NodeList & Nodes () ;
+
+    template <class T>
+    void SubscribeIHM (T* o, void (T::*func) (IFrame*))
+    {
+      _signalNewFrame.connect(bind(func, o,  _1));
+    }
+
+  protected:
+    void NotifyIHM (IFrame *pFrame)
+    {
+      _signalNewFrame(pFrame);
+    }
+    boost::signals2::signal<void (IFrame*) > _signalNewFrame;
+    IConnector * _connector ;
+
+  private:
+    NodeList	_nodes ;
 } ;
 
-} ; // namspace ydle 
+} ; // namespace ydleMaster
 
-#endif // _IProtocol_H_
+#endif // IPROTOCOL_H

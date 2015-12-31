@@ -1,4 +1,4 @@
-#include "crc.h"
+#include "Crc.h"
 
 static uint8_t _atm_crc8_table[256] = {
 		0x00, 0x07, 0x0E, 0x09, 0x1C, 0x1B, 0x12, 0x15,
@@ -35,7 +35,7 @@ static uint8_t _atm_crc8_table[256] = {
 		0xE6, 0xE1, 0xE8, 0xEF, 0xFA, 0xFD, 0xF4, 0xF3
 };
 
-uint8_t  crc8(uint8_t* buf, int len)
+uint8_t crc8(uint8_t* buf, int len)
 {
 	// The inital and final constants as used in the ATM HEC.
 	const uint8_t initial = 0x00;

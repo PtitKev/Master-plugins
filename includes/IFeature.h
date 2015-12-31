@@ -1,22 +1,36 @@
+/*
+ * IFeature.h
+ *
+ *  Created on: Fev 24, 2014
+ *      Author: fets
+ */
 
-#ifndef _IFeature_H_
-#define _IFeature_H_
+#ifndef IFEATURE_H
+#define IFEATURE_H
 
 #include <string>
+
 #include "Ident.h"
 
-namespace ydle {
+namespace ydleMaster {
+
 class IFeature : public Ident
 {
-public:
-	IFeature (std::string name) : Ident(name) {} ;
-	virtual ~IFeature () {} ;
-	virtual void Init ()  = 0 ;
-	virtual void Start ()  = 0 ;
+  public:
+    //virtual std::string Name ()  = 0 ;
+    virtual void Init ()  = 0 ;
+    virtual void Start ()  = 0 ;
 
-protected:
+    virtual void AddScript( const char * name) = 0 ;
+    virtual void ReloadScript(const char * name) = 0;
+    virtual void LoadScript(const char * name) = 0;
+    virtual void UnloadScript(const char * name) = 0;
+
+  public:
+    IFeature (std::string name) : Ident(name) {} ;
+    ~IFeature () {} ;
 } ;
 
-} ; // namspace ydle 
+} ; // namespace ydleMaster
 
-#endif // _IFeature_H_
+#endif // IFEATURE_H

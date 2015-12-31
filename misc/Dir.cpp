@@ -1,22 +1,14 @@
-#include "Dir.h"
-	
-using namespace ydle ;
-using namespace std ;
-
 #include <dirent.h>
 #include <fnmatch.h>
 #include <iostream>
 
-using namespace ydle ;
+#include "Dir.h"
+	
+using namespace ydleMaster ;
+using namespace std ;
 
-void ydle::ListPlugins (const char * dir, StringList & files)
+void ydleMaster::ListFiles (const char * dir, const char * pattern, StringList & files)
 {
-	ListFiles (dir, "*.so", files) ;
-}
-
-void ydle::ListFiles (const char * dir, const char * pattern, StringList & files)
-{
-
 	// open directory
 	DIR *dp;
 	struct dirent *dirp;
@@ -31,8 +23,6 @@ void ydle::ListFiles (const char * dir, const char * pattern, StringList & files
 		char * name = dirp->d_name ;
 		// ignore file not matching 'so' extension
 		if ((pattern != NULL) && fnmatch(pattern, name, FNM_CASEFOLD) != 0) continue ;
-		printf ("ListFiles : looking : %s\n", name) ;
-
 		files.push_back(string(name));
 	}
 }

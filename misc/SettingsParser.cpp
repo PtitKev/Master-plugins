@@ -17,7 +17,7 @@
 using namespace std;
 
 
-namespace ydle {
+namespace ydleMaster {
 
 SettingsParser * SettingsParser::_pInstance = NULL ;
 
@@ -143,5 +143,4 @@ int SettingsParser::writeConfigFile(){
 	return 1;
 }
 
-} /* namespace ydle */
-
+} ; // namespace ydleMaster

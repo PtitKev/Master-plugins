@@ -22,8 +22,8 @@
  * 12-2013 - Denia
  */
 
-#include "webServer.h"
-#include "logging.h"
+#include "WebServer.h"
+#include "LogDestination.h"
 #include <stdio.h>
 
 #include <fstream>
@@ -347,14 +347,18 @@ void HTTPResponse::SetHeader(const string &key, const string &value) {
 int HTTPResponse::Send() {
   map<string, string>::const_iterator iter;
   struct MHD_Response *response = MHD_create_response_from_data(
-      m_data.length(),
-      static_cast<void*>(const_cast<char*>(m_data.data())),
-      MHD_NO,
-      MHD_YES);
-  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
-    MHD_add_response_header(response,
-                            iter->first.c_str(),
-                            iter->second.c_str());
+    m_data.length(),
+    static_cast<void*>(const_cast<char*>(m_data.data())),
+    MHD_NO,
+    MHD_YES
+  );
+  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter) {
+    MHD_add_response_header(
+      response,
+      iter->first.c_str(),
+      iter->second.c_str()
+    );
+  }
   int ret = MHD_queue_response(m_connection, m_status_code, response);
   MHD_destroy_response(response);
   return ret;
@@ -367,10 +371,10 @@ int HTTPResponse::Send() {
  * @param data_dir the directory to serve static content from
  */
 HTTPServer::HTTPServer(const HTTPServerOptions &options){
-      m_httpd = NULL;
-      m_default_handler = NULL;
-      m_port = options.port;
-      m_data_dir = options.data_dir;
+  m_httpd = NULL;
+  m_default_handler = NULL;
+  m_port = options.port;
+  m_data_dir = options.data_dir;
 }
 
 
@@ -429,7 +433,6 @@ void *HTTPServer::Run() {
     YDLE_FATAL << "HTTPServer::Run called but the server wasn't setup.";
     return NULL;
   }
-
   YDLE_INFO << "HTTP Server started on port " << m_port;
   return NULL;
 }
@@ -533,9 +536,8 @@ void HTTPServer::UpdateSockets() {
 /*
  * Call the appropriate handler.
  */
-int HTTPServer::DispatchRequest(const HTTPRequest *request,
-                                HTTPResponse *response) {
-
+int HTTPServer::DispatchRequest(const HTTPRequest *request, HTTPResponse *response)
+{
 	string url = request->Url();
 	if(std::count(url.begin(), url.end(), '/') > 1){
 		// Split the URL
