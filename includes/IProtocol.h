@@ -54,13 +54,13 @@ class IProtocol
     void SubscribeIHM (T* o, void (T::*func) (IFrame*))
     {
       _signalNewFrame.connect(bind(func, o,  _1));
-    }
+    } ;
 
   protected:
     void NotifyIHM (IFrame *pFrame)
     {
       _signalNewFrame(pFrame);
-    }
+    } ;
     boost::signals2::signal<void (IFrame*) > _signalNewFrame;
     IConnector * _connector ;
 
