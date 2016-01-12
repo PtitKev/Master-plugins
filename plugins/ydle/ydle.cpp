@@ -1,8 +1,8 @@
 /*
  * ydle.cpp
  *
- *  Created on: Dec 20, 2015
- *      Author: PtitKev
+ * Created on: Dec 20, 2015
+ * Author: PtitKev
  */
 
 #include "ydle.h"
@@ -12,17 +12,17 @@
 
 using namespace ydleMaster ;
 
-void ydle::Init (IConnector *connector)
+void ydle::Init(IConnector *connector)
 {
   _connector = connector;
-  InitReception ();
+  InitReception();
 }
 
-void ydle::Start ()
+void ydle::Start()
 {
 }
 
-void ydle::InitReception ()
+void ydle::InitReception()
 {
   first = true;
   rx_active = false;
@@ -76,7 +76,7 @@ void ydle::onBitReceived(uint8_t bit_value)
     }
 
     // Quand on a reçu les 24 premiers bits, on connait la longueur de la trame
-    // On vérifie alors que la longueur semble logique	
+    // On vérifie alors que la longueur semble logique  
     if (bit_count >= 48)
     {
       // Les bits 19 à 24 informent de la taille de la trame
@@ -85,7 +85,7 @@ void ydle::onBitReceived(uint8_t bit_value)
       {
         // Mauvaise taille de message, on ré-initialise la lecture
         YDLE_INFO << rx_bytes_count << " error !";
-        InitReception ();
+        InitReception();
         return;
       }
     }
@@ -100,8 +100,8 @@ void ydle::onBitReceived(uint8_t bit_value)
       memcpy(frame.data, m_data, rx_bytes_count - 1) ; // copy data len - crc
       // crc calcul
       frame.crc = computeCrc(&frame);
-      onFrameReceived (&frame);
-      InitReception ();
+      onFrameReceived(&frame);
+      InitReception();
     }
   } else if (rx_bits == YDLE_START) {
     // Octet de start, on commence à collecter les données
@@ -129,21 +129,21 @@ void ydle::onFrameReceived(frame_ydle *frame)
       }
     }
   }
-  else if(frame->type == YDLE_TYPE_ETAT_ACK)
+  else if(frame->type == YDLE_TYPE_STATE_ACK)
   {
     YDLE_DEBUG << "New State/ACK frame ready to be sent :";
-    NotifyIHM (frame) ;
+    NotifyIHM(frame) ;
     SendACK(frame);
   }
-  else if(frame->type == YDLE_TYPE_ETAT)
+  else if(frame->type == YDLE_TYPE_STATE)
   {
     YDLE_DEBUG << "New State frame ready to be sent :";
-    NotifyIHM (frame) ;
+    NotifyIHM(frame) ;
   }
   else if(frame->type == YDLE_TYPE_CMD)
   {
     YDLE_DEBUG << "New Command frame ready to be sent :";
-    NotifyIHM (frame) ;
+    NotifyIHM(frame) ;
   }
   else
   {
@@ -151,80 +151,125 @@ void ydle::onFrameReceived(frame_ydle *frame)
   }
 }
 
-Json::Value ydle::onIHMRequest (const WebServer::HTTPRequest *request)
+Json::Value ydle::onIHMRequest(const WebServer::HTTPRequest *request)
 {
   Json::Value reply;
 
-	string url = request->Url();
+  string url = request->Url();
 
-	if(std::count(url.begin(), url.end(), '/') > 1){
-		// Split the URL
-		const char *pch = std::strtok((char*)url.data(), "/" );
-		pch = std::strtok(NULL, "/" );
-		url = pch;
-	}
+  if(std::count(url.begin(), url.end(), '/') > 1){
+    // Split the URL
+    const char *pch = std::strtok((char*)url.data(), "/" );
+    pch = std::strtok(NULL, "/" );
+    url = pch;
+  }
 
   if(url.compare("on") == 0){
-		string nid = request->GetParameter("nid");
-		string target = request->GetParameter("target");
-		string sender = request->GetParameter("sender");
-		if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
+    string nid = request->GetParameter("nid");
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
       reply["result"] = "KO";
       reply["message"] = "A parameter is missing";
-		}else{
+    }else{
       frame_ydle frame;
       InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
       addData(&frame, YDLE_CMD_ON, 1);
       Send(&frame) ;
       reply["result"] = "OK";
       reply["message"] = "Sended";
-		}
+    }
   }
   else if(url.compare("off") == 0){
-		string nid = request->GetParameter("nid");
-		string target = request->GetParameter("target");
-		string sender = request->GetParameter("sender");
-		if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
+    string nid = request->GetParameter("nid");
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
       reply["result"] = "KO";
       reply["message"] = "A parameter is missing";
-		}else{
+    }else{
       frame_ydle frame;
       InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
       addData(&frame, YDLE_CMD_OFF, 1);
       Send(&frame) ;
       reply["result"] = "OK";
       reply["message"] = "Sended";
-		}
+    }
   }
   else if(url.compare("link") == 0){
-		string target = request->GetParameter("target");
-		string sender = request->GetParameter("sender");
-		if(target.length() == 0 || sender.length() == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
       reply["result"] = "KO";
       reply["message"] = "A parameter is missing";
-		}else{
+    }else{
       frame_ydle frame;
       InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
       addData(&frame, YDLE_CMD_LINK, 1);
       Send(&frame) ;
       reply["result"] = "OK";
       reply["message"] = "Sended";
-		}
+    }
   }
   else if(url.compare("reset") == 0){
-		string target = request->GetParameter("target");
-		string sender = request->GetParameter("sender");
-		if(target.length() == 0 || sender.length() == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
       reply["result"] = "KO";
       reply["message"] = "A parameter is missing";
-		}else{
+    }else{
       frame_ydle frame;
       InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
       addData(&frame, YDLE_CMD_RESET, 1);
       Send(&frame) ;
       reply["result"] = "OK";
       reply["message"] = "Sended";
-		}
+    }
+  }
+  else if(url.compare("set") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_SET, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("get") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_GET, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("ping") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_PING, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
   }else{
     reply["result"] = "KO";
     reply["message"] = "Unknow command";
@@ -233,11 +278,11 @@ Json::Value ydle::onIHMRequest (const WebServer::HTTPRequest *request)
 }
 
 // Ajout d'une valeur bool
-void ydle::addData(frame_ydle *frame, int type, bool data)
+void ydle::addData(frame_ydle *frame, int index, bool data)
 {
   if (frame->taille < 29)
   {
-    frame->data[frame->taille] = type << 4;
+    frame->data[frame->taille] = index << 4;
     frame->data[frame->taille] += YDLE_DATA_BOOL << 1;
     frame->data[frame->taille] += data & 0x0F;
     frame->taille++;
@@ -245,17 +290,18 @@ void ydle::addData(frame_ydle *frame, int type, bool data)
 }
 
 // Ajout d'une valeur int
-void ydle::addData(frame_ydle *frame, int type, int data)
+void ydle::addData(frame_ydle *frame, int index, int data)
 {
   // 8 bits int
   if (data > -256 && data < 256)
   {
     if (frame->taille < 28) 
     {
-      frame->data[frame->taille] = type << 4;
+      frame->data[frame->taille] = index << 4;
       frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
       frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
       frame->data[frame->taille + 1] = data;
+      YDLE_DEBUG << "toto index : " << index << ", value : " << (int)frame->data[frame->taille];
       frame->taille += 2;
     }
   }
@@ -264,7 +310,7 @@ void ydle::addData(frame_ydle *frame, int type, int data)
   {
     if (frame->taille < 27)
     {
-      frame->data[frame->taille] = type << 4;
+      frame->data[frame->taille] = index << 4;
       frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
       frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
       frame->data[frame->taille + 1] = (data >> 8) & 0xFF;
@@ -275,14 +321,14 @@ void ydle::addData(frame_ydle *frame, int type, int data)
 }
 
 // Ajout d'une valeur long int
-void ydle::addData(frame_ydle *frame, int type, long int data)
+void ydle::addData(frame_ydle *frame, int index, long int data)
 {
   // 24 bits int
   if (data > -16777216 && data < 16777216)
   {
     if (frame->taille < 26)
     {
-      frame->data[frame->taille] = type << 4;
+      frame->data[frame->taille] = index << 4;
       frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
       frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
       frame->data[frame->taille + 1] = (data >> 16);
@@ -296,7 +342,7 @@ void ydle::addData(frame_ydle *frame, int type, long int data)
   {
     if (frame->taille < 25)
     {
-      frame->data[frame->taille] = type << 4;
+      frame->data[frame->taille] = index << 4;
       frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
       frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
       frame->data[frame->taille + 1] = (data >> 24) & 0xFF;
@@ -308,7 +354,7 @@ void ydle::addData(frame_ydle *frame, int type, long int data)
   }
 }
 
-void ydle::Receive (uint8_t rx_value)
+void ydle::Receive(uint8_t rx_value)
 {
   int iTime = getTime();
   if (iTime - iLastTime > TIMEOUT) {
@@ -331,14 +377,14 @@ void ydle::Receive (uint8_t rx_value)
   iLastTime = iTime;
 }
 
-void ydle::InitFrame (frame_ydle *frame, int sender, int receptor, int type)
+void ydle::InitFrame(frame_ydle *frame, int sender, int receptor, int type)
 {
   frame->sender = sender;
   frame->receptor = receptor;
   frame->type = type;
-	frame->taille=0;
-	memset(frame->data, 0, sizeof(frame->data));
-	frame->crc=0;
+  frame->taille=0;
+  memset(frame->data, 0, sizeof(frame->data));
+  frame->crc=0;
 }
 
 void ydle::Send(frame_ydle *frame)
@@ -349,34 +395,42 @@ void ydle::Send(frame_ydle *frame)
 
   frame->Dump("Send");
 
-	itob((int)YDLE_START_BITS, 0, 8);
-	itob(frame->receptor, 8, 8);
-	itob(frame->sender, 16, 8);
-	itob(frame->type, 24, 3);
-	itob(frame->taille, 27, 5);
-	for(i=0; i < frame->taille - 1; i++)
-	{
-		itob(frame->data[i], 32 + (8 * i), 8);
-	}
-	itob(frame->crc, 32 + (8 * i), 8);
+  itob((int)YDLE_START_BITS, 0, 8);
+  itob(frame->receptor, 8, 8);
+  itob(frame->sender, 16, 8);
+  itob(frame->type, 24, 3);
+  itob(frame->taille, 27, 5);
+  for(i=0; i < frame->taille - 1; i++)
+  {
+    itob(frame->data[i], 32 + (8 * i), 8);
+  }
+  itob(frame->crc, 32 + (8 * i), 8);
+  
+  scheduler_realtime();
 
-	// Sequence AGC
-	for (i=0; i < 32; i++)
-	{
-		SendPair(true, DURATION);
-	}
+  // Sequence AGC
+  for (i=0; i < 32; i++)
+  {
+    SendPair(true, DURATION);
+  }
+
+  // Send Data
+  for (i=0; i < (frame->taille + 4) * 8; i++) // data+entete+crc
+  {
+    SendPair(frameBits[i], DURATION);
+  }
+
+  _connector->Send(0);
+
+  scheduler_standard();
+
   char sztmp[255];
   sprintf(sztmp, "Data bin : ");
-
-	// Send Data
-	for (i=0; i < (frame->taille + 4) * 8; i++) // data+entete+crc
+  for (i=0; i < (frame->taille + 4) * 8; i++)
   {
-		SendPair(frameBits[i], DURATION);
     sprintf(sztmp,"%s%d", sztmp, frameBits[i]);
-	}
+  }
   YDLE_DEBUG << sztmp;
-
-	_connector->Send(0);
 }
 
 void ydle::SendACK(frame_ydle *frame)
@@ -387,18 +441,18 @@ void ydle::SendACK(frame_ydle *frame)
 
 void ydle::SendBit(bool b, int pause)
 {
-	if (b) {
-		_connector->Send(1);
-	} else {
+  if (b) {
+    _connector->Send(1);
+  } else {
     _connector->Send(0);
-	}
+  }
   usleep(pause);
 }
 
 void ydle::SendPair(bool b, int pause) 
 {
-	SendBit(b, pause);
-	SendBit(!b, pause);
+  SendBit(b, pause);
+  SendBit(!b, pause);
 }
 
 void ydle::addBit(uint8_t bit)
@@ -427,7 +481,6 @@ uint8_t ydle::computeCrc(frame_ydle *frame)
   {
     buf[a] = frame->data[j];
   }
-  YDLE_DEBUG << "buf" << buf;
   crc = crc8(buf, frame->taille + 2);
   free(buf);
   return crc;
@@ -444,9 +497,9 @@ int ydle::getTime(void)
 
 void ydle::itob(unsigned long integer, int start, int length)
 {
-	for (int i=0; i<length; i++)
-	{
-		int pow2 = 1 << (length-1-i) ;
-		frameBits[start + i] = ((integer & pow2) != 0);
-	}
+  for (int i=0; i<length; i++)
+  {
+    int pow2 = 1 << (length-1-i) ;
+    frameBits[start + i] = ((integer & pow2) != 0);
+  }
 }

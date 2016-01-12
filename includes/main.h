@@ -8,5 +8,7 @@
 
 int main(int, char**);
 void exit_handler(int);
+void scheduler_realtime();
+void scheduler_standard();
 
 #endif // MAIN_H

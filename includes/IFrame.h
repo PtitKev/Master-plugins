@@ -33,7 +33,7 @@ class IFrame
       char sztmp[255];
 
       if (msg)
-        YDLE_DEBUG << "\t" << msg ;
+        YDLE_DEBUG << msg ;
 
       YDLE_DEBUG << "Emetteur : " << (int) sender;
       YDLE_DEBUG << "Recepteur :" << (int) receptor;
